@@ -1,673 +1,737 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>一問一答テストアプリ</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="index.css"> <!-- 共通のCSSがある場合用 -->
-<style>
-/* CSS Styles */
-:root {
-  --primary-color: #3b82f6;
-  --science-color: #10b981;
-  --social-color: #f59e0b;
-  --bg-color: #f3f4f6;
-  --text-main: #1f2937;
-  --text-light: #6b7280;
-  --correct-color: #ef4444; /* 赤: 〇 */
-  --incorrect-color: #3b82f6; /* 青: ✕ */
-  --white: #ffffff;
-}
-body {
-  font-family: 'Inter', 'Noto Sans JP', sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-}
-#app-container {
-  width: 100%;
-  max-width: 480px; /* スマホサイズ最適化 */
-  background-color: var(--white);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.screen {
-  display: none;
-  flex-direction: column;
-  padding: 24px;
-  height: 100%;
-  box-sizing: border-box;
-  animation: fadeIn 0.3s ease;
-}
-.screen.active {
-  display: flex;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一問一答テストアプリ</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="index.css"> <!-- 共通のCSSがある場合用 -->
+  <style>
+    /* CSS Styles */
+    :root {
+      --primary-color: #3b82f6;
+      --science-color: #10b981;
+      --social-color: #f59e0b;
+      --bg-color: #f3f4f6;
+      --text-main: #1f2937;
+      --text-light: #6b7280;
+      --correct-color: #ef4444;
+      /* 赤: 〇 */
+      --incorrect-color: #3b82f6;
+      /* 青: ✕ */
+      --white: #ffffff;
+    }
 
-/* Headers */
-h1, h2 {
-  text-align: center;
-  margin-top: 0;
-}
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 900;
-  margin-bottom: 24px;
-  color: var(--primary-color);
-}
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
 
-/* Buttons */
-.btn {
-  display: block;
-  width: 100%;
-  padding: 16px;
-  margin-bottom: 16px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-.btn:active {
-  transform: scale(0.98);
-}
-.btn-science {
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-  color: white;
-}
-.btn-social {
-  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-  color: white;
-}
-.btn-primary {
-  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
-  color: white;
-  margin-top: 24px;
-}
-.btn-choice {
-  background-color: #f8fafc;
-  border: 2px solid #e2e8f0;
-  color: var(--text-main);
-  font-size: 1rem;
-  padding: 18px;
-}
-.btn-choice:hover {
-  border-color: var(--primary-color);
-  background-color: #eff6ff;
-}
-.btn-choice.correct-reveal {
-  background-color: #fef2f2;
-  border-color: var(--correct-color);
-  color: var(--correct-color);
-  font-weight: 800;
-}
-.btn-choice.incorrect-reveal {
-  opacity: 0.5;
-}
+    #app-container {
+      width: 100%;
+      max-width: 480px;
+      /* スマホサイズ最適化 */
+      background-color: var(--white);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* Settings */
-.settings-group {
-  margin-bottom: 24px;
-}
-.settings-group label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--text-light);
-}
-.toggle-btns {
-  display: flex;
-  gap: 8px;
-}
-.toggle-btn {
-  flex: 1;
-  padding: 12px 0;
-  border: 2px solid #e2e8f0;
-  background: transparent;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-light);
-  transition: all 0.2s;
-}
-.toggle-btn.selected {
-  border-color: var(--primary-color);
-  background-color: var(--primary-color);
-  color: white;
-}
+    .screen {
+      display: none;
+      flex-direction: column;
+      padding: 24px;
+      height: 100%;
+      box-sizing: border-box;
+      animation: fadeIn 0.3s ease;
+    }
 
-/* Test Screen */
-.status-bar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  font-weight: 600;
-  color: var(--text-light);
-}
-.question-container {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-.question-text {
-  font-size: 1.2rem;
-  font-weight: 700;
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-.question-image {
-  width: 100%;
-  max-height: 200px;
-  object-fit: contain;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  background-color: #f8fafc;
-}
-.choices-container {
-  margin-bottom: 20px;
-}
+    .screen.active {
+      display: flex;
+    }
 
-/* Judgment Overlay */
-.judgment-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-  transform: scale(0.5);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 10;
-}
-.judgment-overlay.show {
-  opacity: 1;
-  transform: scale(1);
-}
-.judgment-mark {
-  font-size: 15rem;
-  font-weight: 900;
-  text-shadow: 0 10px 25px rgba(0,0,0,0.2);
-}
-.mark-o { color: var(--correct-color); }
-.mark-x { color: var(--incorrect-color); }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
 
-/* Result Screen */
-.result-circle {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  border: 8px solid var(--primary-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 30px;
-  flex-direction: column;
-}
-.result-score {
-  font-size: 3rem;
-  font-weight: 900;
-  color: var(--primary-color);
-  line-height: 1;
-}
-.result-total {
-  font-size: 1rem;
-  color: var(--text-light);
-}
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-.next-btn-container {
-  margin-top: auto;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.next-btn-container.show {
-  opacity: 1;
-  pointer-events: auto;
-}
+    /* Headers */
+    h1,
+    h2 {
+      text-align: center;
+      margin-top: 0;
+    }
 
-/* Loader Overlay */
-.hidden { display: none !important; }
-.fullscreen-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(2px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #e2e8f0;
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-bottom: 24px;
+      color: var(--primary-color);
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      margin-bottom: 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-science {
+      background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+      color: white;
+    }
+
+    .btn-social {
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+      color: white;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+      color: white;
+      margin-top: 24px;
+    }
+
+    .btn-choice {
+      background-color: #f8fafc;
+      border: 2px solid #e2e8f0;
+      color: var(--text-main);
+      font-size: 1rem;
+      padding: 18px;
+    }
+
+    .btn-choice:hover {
+      border-color: var(--primary-color);
+      background-color: #eff6ff;
+    }
+
+    .btn-choice.correct-reveal {
+      background-color: #fef2f2;
+      border-color: var(--correct-color);
+      color: var(--correct-color);
+      font-weight: 800;
+    }
+
+    .btn-choice.incorrect-reveal {
+      opacity: 0.5;
+    }
+
+    /* Settings */
+    .settings-group {
+      margin-bottom: 24px;
+    }
+
+    .settings-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-light);
+    }
+
+    .toggle-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 12px 0;
+      border: 2px solid #e2e8f0;
+      background: transparent;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.selected {
+      border-color: var(--primary-color);
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    /* Test Screen */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .question-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .question-image {
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background-color: #f8fafc;
+    }
+
+    .choices-container {
+      margin-bottom: 20px;
+    }
+
+    /* Judgment Overlay */
+    .judgment-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10;
+    }
+
+    .judgment-overlay.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .judgment-mark {
+      font-size: 15rem;
+      font-weight: 900;
+      text-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .mark-o {
+      color: var(--correct-color);
+    }
+
+    .mark-x {
+      color: var(--incorrect-color);
+    }
+
+    /* Result Screen */
+    .result-circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 8px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 30px;
+      flex-direction: column;
+    }
+
+    .result-score {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--primary-color);
+      line-height: 1;
+    }
+
+    .result-total {
+      font-size: 1rem;
+      color: var(--text-light);
+    }
+
+    .next-btn-container {
+      margin-top: auto;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .next-btn-container.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Loader Overlay */
+    .hidden {
+      display: none !important;
+    }
+
+    .fullscreen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #e2e8f0;
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Loading Overlay -->
-<div id="fullScreenLoader" class="fullscreen-overlay hidden">
-  <div class="spinner"></div>
-  <div style="margin-top: 1rem; color: var(--primary-color); font-weight: bold; font-size: 1.1rem; letter-spacing: 0.05em;">通信中...</div>
-</div>
-
-<div id="app-container">
-  <!-- Screen 1: Subject Selection -->
-  <div id="screen-subject" class="screen active">
-    <h1 class="header-title">一問一答テスト</h1>
-    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-      <button class="btn btn-science" onclick="selectSubject('理科')">理科</button>
-      <button class="btn btn-social" onclick="selectSubject('社会')">社会</button>
-    </div>
+  <!-- Loading Overlay -->
+  <div id="fullScreenLoader" class="fullscreen-overlay hidden">
+    <div class="spinner"></div>
+    <div
+      style="margin-top: 1rem; color: var(--primary-color); font-weight: bold; font-size: 1.1rem; letter-spacing: 0.05em;">
+      通信中...</div>
   </div>
 
-  <!-- Screen 2: Field Selection -->
-  <div id="screen-field" class="screen">
-    <h2 class="header-title" id="field-title">分野選択</h2>
-    <div id="field-list" style="flex-grow: 1; overflow-y: auto;">
-      <!-- Dynamically populated -->
-    </div>
-    <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-subject')">戻る</button>
-  </div>
-
-  <!-- Screen 2.5: Unit Selection -->
-  <div id="screen-unit" class="screen">
-    <h2 class="header-title" id="unit-title">項目選択</h2>
-    <div id="unit-list" style="flex-grow: 1; overflow-y: auto;">
-      <!-- Dynamically populated -->
-    </div>
-    <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-field')">戻る</button>
-  </div>
-
-  <!-- Screen 3: Settings -->
-  <div id="screen-settings" class="screen">
-    <h2 class="header-title">出題設定</h2>
-    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-      <div class="settings-group">
-        <label>問題数</label>
-        <div class="toggle-btns" id="toggle-questions">
-          <button class="toggle-btn selected" data-val="10">10問</button>
-          <button class="toggle-btn" data-val="20">20問</button>
-        </div>
-      </div>
-      <div class="settings-group">
-        <label>選択肢の数</label>
-        <div class="toggle-btns" id="toggle-choices">
-          <button class="toggle-btn" data-val="2">2択</button>
-          <button class="toggle-btn" data-val="3">3択</button>
-          <button class="toggle-btn selected" data-val="4">4択</button>
-        </div>
-      </div>
-      <div class="settings-group">
-        <label>難易度</label>
-        <div class="toggle-btns" id="toggle-difficulty">
-          <button class="toggle-btn selected" data-val="すべて">すべて</button>
-          <button class="toggle-btn" data-val="標準">標準</button>
-          <button class="toggle-btn" data-val="応用">応用</button>
-          <button class="toggle-btn" data-val="難問">難問</button>
-        </div>
+  <div id="app-container">
+    <!-- Screen 1: Subject Selection -->
+    <div id="screen-subject" class="screen active">
+      <h1 class="header-title">一問一答テスト</h1>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <button class="btn btn-science" onclick="selectSubject('理科')">理科</button>
+        <button class="btn btn-social" onclick="selectSubject('社会')">社会</button>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="startTest()">テストスタート</button>
-    <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-unit')">戻る</button>
-  </div>
 
-  <!-- Screen 4: Test -->
-  <div id="screen-test" class="screen">
-    <div class="status-bar">
-      <span id="test-subject-unit">理科 - 生物</span>
-      <span id="test-progress">1 / 10</span>
-    </div>
-    <div class="question-container">
-      <div id="question-text" class="question-text"></div>
-      <img id="question-image" class="question-image" src="" alt="問題画像" style="display: none;">
-      <div id="choices-container" class="choices-container">
+    <!-- Screen 2: Field Selection -->
+    <div id="screen-field" class="screen">
+      <h2 class="header-title" id="field-title">分野選択</h2>
+      <div id="field-list" style="flex-grow: 1; overflow-y: auto;">
         <!-- Dynamically populated -->
       </div>
+      <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-subject')">戻る</button>
     </div>
-    <div id="next-btn-container" class="next-btn-container">
-      <button class="btn btn-primary" onclick="nextQuestion()">次へ</button>
-    </div>
-    <!-- Judgment Overlay -->
-    <div id="judgment-overlay" class="judgment-overlay">
-      <div id="judgment-mark" class="judgment-mark"></div>
-    </div>
-  </div>
 
-  <!-- Screen 5: Result -->
-  <div id="screen-result" class="screen">
-    <h2 class="header-title">テスト結果</h2>
-    <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-      <div class="result-circle">
-        <div class="result-score" id="result-score">80<span style="font-size:1.5rem">%</span></div>
-        <div class="result-total" id="result-detail">8 / 10 問正解</div>
+    <!-- Screen 2.5: Unit Selection -->
+    <div id="screen-unit" class="screen">
+      <h2 class="header-title" id="unit-title">項目選択</h2>
+      <div id="unit-list" style="flex-grow: 1; overflow-y: auto;">
+        <!-- Dynamically populated -->
       </div>
-      <p style="text-align: center; margin-bottom: 30px; font-weight: 600;" id="result-message">よくがんばりました！</p>
+      <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-field')">戻る</button>
     </div>
-    <button class="btn btn-primary" onclick="resetToHome()">最初に戻る</button>
+
+    <!-- Screen 3: Settings -->
+    <div id="screen-settings" class="screen">
+      <h2 class="header-title">出題設定</h2>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <div class="settings-group">
+          <label>問題数</label>
+          <div class="toggle-btns" id="toggle-questions">
+            <button class="toggle-btn selected" data-val="10">10問</button>
+            <button class="toggle-btn" data-val="20">20問</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>選択肢の数</label>
+          <div class="toggle-btns" id="toggle-choices">
+            <button class="toggle-btn" data-val="2">2択</button>
+            <button class="toggle-btn" data-val="3">3択</button>
+            <button class="toggle-btn selected" data-val="4">4択</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>難易度</label>
+          <div class="toggle-btns" id="toggle-difficulty">
+            <button class="toggle-btn selected" data-val="すべて">すべて</button>
+            <button class="toggle-btn" data-val="標準">標準</button>
+            <button class="toggle-btn" data-val="応用">応用</button>
+            <button class="toggle-btn" data-val="難問">難問</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startTest()">テストスタート</button>
+      <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-unit')">戻る</button>
+    </div>
+
+    <!-- Screen 4: Test -->
+    <div id="screen-test" class="screen">
+      <div class="status-bar">
+        <span id="test-subject-unit">理科 - 生物</span>
+        <span id="test-progress">1 / 10</span>
+      </div>
+      <div class="question-container">
+        <div id="question-text" class="question-text"></div>
+        <img id="question-image" class="question-image" src="" alt="問題画像" style="display: none;">
+        <div id="choices-container" class="choices-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div id="next-btn-container" class="next-btn-container">
+        <button class="btn btn-primary" onclick="nextQuestion()">次へ</button>
+      </div>
+      <!-- Judgment Overlay -->
+      <div id="judgment-overlay" class="judgment-overlay">
+        <div id="judgment-mark" class="judgment-mark"></div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Result -->
+    <div id="screen-result" class="screen">
+      <h2 class="header-title">テスト結果</h2>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+        <div class="result-circle">
+          <div class="result-score" id="result-score">80<span style="font-size:1.5rem">%</span></div>
+          <div class="result-total" id="result-detail">8 / 10 問正解</div>
+        </div>
+        <p style="text-align: center; margin-bottom: 30px; font-weight: 600;" id="result-message">よくがんばりました！</p>
+      </div>
+      <button class="btn btn-primary" onclick="resetToHome()">最初に戻る</button>
+    </div>
+
   </div>
 
-</div>
+  <script>
+    // --- API Fetch Logic ---
+    const API_URL = 'https://script.google.com/macros/s/AKfycbx1QXMvmTkNbMC1rTGNzoG8-_9e5R0SknNB_VMTsvl3SRmvtYXbOcGpNgkwKgjME-ywDw/exec';
 
-<script>
-// --- API Fetch Logic ---
-const API_URL = 'https://script.google.com/macros/s/AKfycbx1QXMvmTkNbMC1rTGNzoG8-_9e5R0SknNB_VMTsvl3SRmvtYXbOcGpNgkwKgjME-ywDw/exec';
+    async function apiFetch(action, data = {}) {
+      try {
+        const payload = { action: action, ...data };
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Network error');
+        return await response.json();
+      } catch (error) {
+        console.error('API Error:', error);
+        return { status: 'error', message: '通信エラーが発生しました。' };
+      }
+    }
 
-async function apiFetch(action, data = {}) {
-  try {
-    const payload = { action: action, ...data };
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
+    // --- Data State from GAS ---
+    let dbSubjects = [];
+    let dbFields = {};
+    let dbUnits = {};
+
+    // --- Session State ---
+    let currentState = {
+      subject: "",
+      field: "",
+      unit: "",
+      difficulty: "すべて",
+      qCount: 10,
+      cCount: 4,
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      isAnswered: false
+    };
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', async () => {
+      const loader = document.getElementById('fullScreenLoader');
+      loader.classList.remove('hidden');
+
+      try {
+        const res = await apiFetch('getQuizCategories');
+
+        if (res && res.status === 'success') {
+          dbSubjects = res.data.subjects || [];
+          dbFields = res.data.fields || {};
+          dbUnits = res.data.units || {};
+        } else {
+          const errorMsg = res && res.message ? res.message : '不明なエラー';
+          alert("GASから問題データを取得できませんでした。\nGASのデプロイが新しいバージョンに更新されているか確認してください。\n\n詳細: " + errorMsg);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("予期せぬエラーが発生しました。\n\n詳細: " + err.toString());
+      } finally {
+        // 確実にローディングを消す
+        loader.classList.add('hidden');
+      }
     });
-    if (!response.ok) throw new Error('Network error');
-    return await response.json();
-  } catch (error) {
-    console.error('API Error:', error);
-    return { status: 'error', message: '通信エラーが発生しました。' };
-  }
-}
 
-// --- Data State from GAS ---
-let dbSubjects = [];
-let dbFields = {};
-let dbUnits = {};
-
-// --- Session State ---
-let currentState = {
-  subject: "",
-  field: "",
-  unit: "",
-  difficulty: "すべて",
-  qCount: 10,
-  cCount: 4,
-  questions: [],
-  currentIndex: 0,
-  score: 0,
-  isAnswered: false
-};
-
-// --- Initialization ---
-document.addEventListener('DOMContentLoaded', async () => {
-  const loader = document.getElementById('fullScreenLoader');
-  loader.classList.remove('hidden');
-  
-  try {
-    const res = await apiFetch('getQuizCategories');
-    
-    if (res && res.status === 'success') {
-      dbSubjects = res.data.subjects || [];
-      dbFields = res.data.fields || {};
-      dbUnits = res.data.units || {};
-    } else {
-      const errorMsg = res && res.message ? res.message : '不明なエラー';
-      alert("GASから問題データを取得できませんでした。\nGASのデプロイが新しいバージョンに更新されているか確認してください。\n\n詳細: " + errorMsg);
+    // --- UI Logic ---
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
     }
-  } catch (err) {
-    console.error(err);
-    alert("予期せぬエラーが発生しました。\n\n詳細: " + err.toString());
-  } finally {
-    // 確実にローディングを消す
-    loader.classList.add('hidden');
-  }
-});
 
-// --- UI Logic ---
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
-}
-
-function resetToHome() {
-  showScreen('screen-subject');
-}
-
-function selectSubject(subject) {
-  currentState.subject = subject;
-  document.getElementById('field-title').innerText = `${subject}の分野`;
-  
-  const list = document.getElementById('field-list');
-  list.innerHTML = "";
-  
-  const fields = dbFields[subject] || [];
-  if (fields.length === 0) {
-    alert("この教科のデータはまだ登録されていません。");
-    return;
-  }
-  
-  fields.forEach(field => {
-    const btn = document.createElement('button');
-    btn.className = 'btn';
-    btn.innerText = field;
-    btn.onclick = () => selectField(field);
-    list.appendChild(btn);
-  });
-  showScreen('screen-field');
-}
-
-function selectField(field) {
-  currentState.field = field;
-  document.getElementById('unit-title').innerText = `${field}の項目`;
-  
-  const list = document.getElementById('unit-list');
-  list.innerHTML = "";
-  
-  const units = dbUnits[field] || [];
-  if (units.length === 0) {
-    // 項目がない場合は直接出題設定へ
-    currentState.unit = "";
-    showScreen('screen-settings');
-    return;
-  }
-  
-  units.forEach(unit => {
-    const btn = document.createElement('button');
-    btn.className = 'btn';
-    btn.innerText = unit;
-    btn.onclick = () => selectUnit(unit);
-    list.appendChild(btn);
-  });
-  
-  // 「すべて」から出題するオプション
-  const allBtn = document.createElement('button');
-  allBtn.className = 'btn btn-primary';
-  allBtn.innerText = `${field}の全範囲から出題`;
-  allBtn.style.marginTop = '24px';
-  allBtn.onclick = () => selectUnit("");
-  list.appendChild(allBtn);
-
-  showScreen('screen-unit');
-}
-
-function selectUnit(unit) {
-  currentState.unit = unit;
-  showScreen('screen-settings');
-}
-
-// Toggle setup
-document.getElementById('toggle-questions').addEventListener('click', (e) => {
-  if (e.target.tagName === 'BUTTON') {
-    document.querySelectorAll('#toggle-questions .toggle-btn').forEach(b => b.classList.remove('selected'));
-    e.target.classList.add('selected');
-    currentState.qCount = parseInt(e.target.dataset.val);
-  }
-});
-document.getElementById('toggle-choices').addEventListener('click', (e) => {
-  if (e.target.tagName === 'BUTTON') {
-    document.querySelectorAll('#toggle-choices .toggle-btn').forEach(b => b.classList.remove('selected'));
-    e.target.classList.add('selected');
-    currentState.cCount = parseInt(e.target.dataset.val);
-  }
-});
-
-document.getElementById('toggle-difficulty').addEventListener('click', (e) => {
-  if (e.target.tagName === 'BUTTON') {
-    document.querySelectorAll('#toggle-difficulty .toggle-btn').forEach(b => b.classList.remove('selected'));
-    e.target.classList.add('selected');
-    currentState.difficulty = e.target.dataset.val;
-  }
-});
-
-async function startTest() {
-  document.getElementById('fullScreenLoader').classList.remove('hidden');
-  
-  const payload = {
-    subject: currentState.subject,
-    field: currentState.field,
-    unit: currentState.unit,
-    difficulty: currentState.difficulty,
-    qCount: currentState.qCount,
-    cCount: currentState.cCount
-  };
-  
-  const res = await apiFetch('getQuizQuestions', payload);
-  document.getElementById('fullScreenLoader').classList.add('hidden');
-  
-  if (res.status === 'success' && res.data && res.data.length > 0) {
-    currentState.questions = res.data;
-    currentState.qCount = res.data.length; // 実際取得できた問題数に合わせる
-    currentState.currentIndex = 0;
-    currentState.score = 0;
-    
-    showScreen('screen-test');
-    renderQuestion();
-  } else {
-    alert("指定した範囲に問題が見つかりません。別の条件でお試しください。");
-    showScreen('screen-unit');
-  }
-}
-
-function renderQuestion() {
-  currentState.isAnswered = false;
-  document.getElementById('next-btn-container').classList.remove('show');
-  document.getElementById('judgment-overlay').classList.remove('show');
-  
-  const qIndex = currentState.currentIndex;
-  const qData = currentState.questions[qIndex];
-  
-  const headerText = qData.unit ? `${qData.field} - ${qData.unit}` : `${qData.subject} - ${qData.field}`;
-  document.getElementById('test-subject-unit').innerText = headerText;
-  document.getElementById('test-progress').innerText = `${qIndex + 1} / ${currentState.qCount}`;
-  
-  document.getElementById('question-text').innerText = qData.question;
-  
-  const imgEl = document.getElementById('question-image');
-  if (qData.image && qData.image.trim() !== '') {
-    imgEl.src = qData.image;
-    imgEl.style.display = 'block';
-  } else {
-    imgEl.style.display = 'none';
-    imgEl.src = "";
-  }
-  
-  // 選択肢の準備
-  let rawChoices = [qData.correct];
-  if (currentState.cCount >= 2 && qData.dummy1) rawChoices.push(qData.dummy1);
-  if (currentState.cCount >= 3 && qData.dummy2) rawChoices.push(qData.dummy2);
-  if (currentState.cCount >= 4 && qData.dummy3) rawChoices.push(qData.dummy3);
-  
-  // 選択肢のシャッフル
-  const shuffledChoices = rawChoices.map(value => ({ value, sort: Math.random() }))
-                                    .sort((a, b) => a.sort - b.sort)
-                                    .map(({ value }) => value);
-  
-  const cContainer = document.getElementById('choices-container');
-  cContainer.innerHTML = "";
-  
-  shuffledChoices.forEach(choice => {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-choice';
-    btn.innerText = choice;
-    btn.onclick = () => handleAnswer(choice, qData.correct, btn);
-    cContainer.appendChild(btn);
-  });
-}
-
-function handleAnswer(selected, correct, btnElement) {
-  if (currentState.isAnswered) return;
-  currentState.isAnswered = true;
-  
-  const isCorrect = (selected === correct);
-  if (isCorrect) currentState.score++;
-  
-  // 〇✕アニメーション表示
-  const overlay = document.getElementById('judgment-overlay');
-  const mark = document.getElementById('judgment-mark');
-  
-  if (isCorrect) {
-    mark.innerText = "〇";
-    mark.className = "judgment-mark mark-o";
-  } else {
-    mark.innerText = "✕";
-    mark.className = "judgment-mark mark-x";
-  }
-  
-  overlay.classList.add('show');
-  setTimeout(() => {
-    overlay.classList.remove('show');
-  }, 800);
-  
-  // 正解をハイライト表示
-  const buttons = document.querySelectorAll('.btn-choice');
-  buttons.forEach(b => {
-    if (b.innerText === correct) {
-      b.classList.add('correct-reveal');
-    } else {
-      b.classList.add('incorrect-reveal');
+    function resetToHome() {
+      showScreen('screen-subject');
     }
-  });
-  
-  document.getElementById('next-btn-container').classList.add('show');
-}
 
-function nextQuestion() {
-  currentState.currentIndex++;
-  if (currentState.currentIndex >= currentState.qCount) {
-    showResult();
-  } else {
-    renderQuestion();
-  }
-}
+    function selectSubject(subject) {
+      currentState.subject = subject;
+      document.getElementById('field-title').innerText = `${subject}の分野`;
 
-function showResult() {
-  const rate = Math.round((currentState.score / currentState.qCount) * 100);
-  document.getElementById('result-score').innerHTML = `${rate}<span style="font-size:1.5rem">%</span>`;
-  document.getElementById('result-detail').innerText = `${currentState.score} / ${currentState.qCount} 問正解`;
-  
-  let msg = "よくがんばりました！";
-  if (rate === 100) msg = "パーフェクト！素晴らしい！";
-  else if (rate >= 80) msg = "あともう少し！";
-  else if (rate < 50) msg = "復習してもう一度チャレンジしよう！";
-  
-  document.getElementById('result-message').innerText = msg;
-  
-  showScreen('screen-result');
-}
-</script>
+      const list = document.getElementById('field-list');
+      list.innerHTML = "";
+
+      const fields = dbFields[subject] || [];
+      if (fields.length === 0) {
+        alert("この教科のデータはまだ登録されていません。");
+        return;
+      }
+
+      fields.forEach(field => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = field;
+        btn.onclick = () => selectField(field);
+        list.appendChild(btn);
+      });
+      showScreen('screen-field');
+    }
+
+    function selectField(field) {
+      currentState.field = field;
+      document.getElementById('unit-title').innerText = `${field}の項目`;
+
+      const list = document.getElementById('unit-list');
+      list.innerHTML = "";
+
+      const units = dbUnits[field] || [];
+      if (units.length === 0) {
+        // 項目がない場合は直接出題設定へ
+        currentState.unit = "";
+        showScreen('screen-settings');
+        return;
+      }
+
+      units.forEach(unit => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = unit;
+        btn.onclick = () => selectUnit(unit);
+        list.appendChild(btn);
+      });
+
+      // 「すべて」から出題するオプション
+      const allBtn = document.createElement('button');
+      allBtn.className = 'btn btn-primary';
+      allBtn.innerText = `${field}の全範囲から出題`;
+      allBtn.style.marginTop = '24px';
+      allBtn.onclick = () => selectUnit("");
+      list.appendChild(allBtn);
+
+      showScreen('screen-unit');
+    }
+
+    function selectUnit(unit) {
+      currentState.unit = unit;
+      showScreen('screen-settings');
+    }
+
+    // Toggle setup
+    document.getElementById('toggle-questions').addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        document.querySelectorAll('#toggle-questions .toggle-btn').forEach(b => b.classList.remove('selected'));
+        e.target.classList.add('selected');
+        currentState.qCount = parseInt(e.target.dataset.val);
+      }
+    });
+    document.getElementById('toggle-choices').addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        document.querySelectorAll('#toggle-choices .toggle-btn').forEach(b => b.classList.remove('selected'));
+        e.target.classList.add('selected');
+        currentState.cCount = parseInt(e.target.dataset.val);
+      }
+    });
+
+    document.getElementById('toggle-difficulty').addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+        document.querySelectorAll('#toggle-difficulty .toggle-btn').forEach(b => b.classList.remove('selected'));
+        e.target.classList.add('selected');
+        currentState.difficulty = e.target.dataset.val;
+      }
+    });
+
+    async function startTest() {
+      document.getElementById('fullScreenLoader').classList.remove('hidden');
+
+      const payload = {
+        subject: currentState.subject,
+        field: currentState.field,
+        unit: currentState.unit,
+        difficulty: currentState.difficulty,
+        qCount: currentState.qCount,
+        cCount: currentState.cCount
+      };
+
+      const res = await apiFetch('getQuizQuestions', payload);
+      document.getElementById('fullScreenLoader').classList.add('hidden');
+
+      if (res.status === 'success' && res.data && res.data.length > 0) {
+        currentState.questions = res.data;
+        currentState.qCount = res.data.length; // 実際取得できた問題数に合わせる
+        currentState.currentIndex = 0;
+        currentState.score = 0;
+
+        showScreen('screen-test');
+        renderQuestion();
+      } else {
+        alert("指定した範囲に問題が見つかりません。別の条件でお試しください。");
+        showScreen('screen-unit');
+      }
+    }
+
+    function renderQuestion() {
+      currentState.isAnswered = false;
+      document.getElementById('next-btn-container').classList.remove('show');
+      document.getElementById('judgment-overlay').classList.remove('show');
+
+      const qIndex = currentState.currentIndex;
+      const qData = currentState.questions[qIndex];
+
+      const headerText = qData.unit ? `${qData.field} - ${qData.unit}` : `${qData.subject} - ${qData.field}`;
+      document.getElementById('test-subject-unit').innerText = headerText;
+      document.getElementById('test-progress').innerText = `${qIndex + 1} / ${currentState.qCount}`;
+
+      document.getElementById('question-text').innerText = qData.question;
+
+      const imgEl = document.getElementById('question-image');
+      if (qData.image && qData.image.trim() !== '') {
+        imgEl.src = qData.image;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
+        imgEl.src = "";
+      }
+
+      // 選択肢の準備
+      let rawChoices = [qData.correct];
+      if (currentState.cCount >= 2 && qData.dummy1) rawChoices.push(qData.dummy1);
+      if (currentState.cCount >= 3 && qData.dummy2) rawChoices.push(qData.dummy2);
+      if (currentState.cCount >= 4 && qData.dummy3) rawChoices.push(qData.dummy3);
+
+      // 選択肢のシャッフル
+      const shuffledChoices = rawChoices.map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+
+      const cContainer = document.getElementById('choices-container');
+      cContainer.innerHTML = "";
+
+      shuffledChoices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-choice';
+        btn.innerText = choice;
+        btn.onclick = () => handleAnswer(choice, qData.correct, btn);
+        cContainer.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selected, correct, btnElement) {
+      if (currentState.isAnswered) return;
+      currentState.isAnswered = true;
+
+      const isCorrect = (selected === correct);
+      if (isCorrect) currentState.score++;
+
+      // 〇✕アニメーション表示
+      const overlay = document.getElementById('judgment-overlay');
+      const mark = document.getElementById('judgment-mark');
+
+      if (isCorrect) {
+        mark.innerText = "〇";
+        mark.className = "judgment-mark mark-o";
+      } else {
+        mark.innerText = "✕";
+        mark.className = "judgment-mark mark-x";
+      }
+
+      overlay.classList.add('show');
+      setTimeout(() => {
+        overlay.classList.remove('show');
+      }, 800);
+
+      // 正解をハイライト表示
+      const buttons = document.querySelectorAll('.btn-choice');
+      buttons.forEach(b => {
+        if (b.innerText === correct) {
+          b.classList.add('correct-reveal');
+        } else {
+          b.classList.add('incorrect-reveal');
+        }
+      });
+
+      document.getElementById('next-btn-container').classList.add('show');
+    }
+
+    function nextQuestion() {
+      currentState.currentIndex++;
+      if (currentState.currentIndex >= currentState.qCount) {
+        showResult();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function showResult() {
+      const rate = Math.round((currentState.score / currentState.qCount) * 100);
+      document.getElementById('result-score').innerHTML = `${rate}<span style="font-size:1.5rem">%</span>`;
+      document.getElementById('result-detail').innerText = `${currentState.score} / ${currentState.qCount} 問正解`;
+
+      let msg = "よくがんばりました！";
+      if (rate === 100) msg = "パーフェクト！素晴らしい！";
+      else if (rate >= 80) msg = "あともう少し！";
+      else if (rate < 50) msg = "復習してもう一度チャレンジしよう！";
+
+      document.getElementById('result-message').innerText = msg;
+
+      showScreen('screen-result');
+    }
+  </script>
 </body>
+
 </html>
