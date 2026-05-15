@@ -415,11 +415,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       dbFields = res.data.fields || {};
       dbUnits = res.data.units || {};
     } else {
-      alert("GASから問題データを取得できませんでした。\nGASのデプロイが新しいバージョンに更新されているか確認してください。");
+      const errorMsg = res && res.message ? res.message : '不明なエラー';
+      alert("GASから問題データを取得できませんでした。\nGASのデプロイが新しいバージョンに更新されているか確認してください。\n\n詳細: " + errorMsg);
     }
   } catch (err) {
     console.error(err);
-    alert("予期せぬエラーが発生しました。");
+    alert("予期せぬエラーが発生しました。\n\n詳細: " + err.toString());
   } finally {
     // 確実にローディングを消す
     loader.classList.add('hidden');
