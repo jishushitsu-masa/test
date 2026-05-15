@@ -193,7 +193,6 @@
     }
 
     .question-container {
-      flex-grow: 1;
       display: flex;
       flex-direction: column;
     }
@@ -281,7 +280,6 @@
     }
 
     .next-btn-container {
-      margin-top: auto;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s;
@@ -414,7 +412,10 @@
         </div>
       </div>
       <div id="next-btn-container" class="next-btn-container">
-        <button class="btn btn-primary" onclick="nextQuestion()">次へ</button>
+        <button class="btn btn-primary" style="margin-top: 0;" onclick="nextQuestion()">次へ</button>
+      </div>
+      <div style="margin-top: 16px;">
+        <button class="btn" style="background-color: #f1f5f9; color: var(--text-light); margin-bottom: 0;" onclick="endTestEarly()">テストを終わる</button>
       </div>
       <!-- Judgment Overlay -->
       <div id="judgment-overlay" class="judgment-overlay">
@@ -666,6 +667,7 @@
         const btn = document.createElement('button');
         btn.className = 'btn btn-choice';
         btn.innerText = choice;
+        btn.dataset.choice = choice;
         btn.onclick = () => handleAnswer(choice, qData.correct, btn);
         cContainer.appendChild(btn);
       });
@@ -698,10 +700,13 @@
       // 正解をハイライト表示
       const buttons = document.querySelectorAll('.btn-choice');
       buttons.forEach(b => {
-        if (b.innerText === correct) {
+        const originalText = b.dataset.choice || b.innerText;
+        if (originalText === correct) {
           b.classList.add('correct-reveal');
+          b.innerText = "〇 " + originalText;
         } else {
           b.classList.add('incorrect-reveal');
+          b.innerText = "✕ " + originalText;
         }
       });
 
@@ -714,6 +719,17 @@
         showResult();
       } else {
         renderQuestion();
+      }
+    }
+
+    function endTestEarly() {
+      if (confirm("テストを終了して結果画面へ移動しますか？")) {
+        if (currentState.currentIndex === 0 && !currentState.isAnswered) {
+          resetToHome();
+          return;
+        }
+        currentState.qCount = currentState.currentIndex + (currentState.isAnswered ? 1 : 0);
+        showResult();
       }
     }
 
