@@ -254,13 +254,22 @@ h1, h2 {
     </div>
   </div>
 
-  <!-- Screen 2: Unit Selection -->
-  <div id="screen-unit" class="screen">
-    <h2 class="header-title" id="unit-title">単元選択</h2>
-    <div id="unit-list" style="flex-grow: 1; overflow-y: auto;">
+  <!-- Screen 2: Field Selection -->
+  <div id="screen-field" class="screen">
+    <h2 class="header-title" id="field-title">分野選択</h2>
+    <div id="field-list" style="flex-grow: 1; overflow-y: auto;">
       <!-- Dynamically populated -->
     </div>
     <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-subject')">戻る</button>
+  </div>
+
+  <!-- Screen 2.5: Unit Selection -->
+  <div id="screen-unit" class="screen">
+    <h2 class="header-title" id="unit-title">項目選択</h2>
+    <div id="unit-list" style="flex-grow: 1; overflow-y: auto;">
+      <!-- Dynamically populated -->
+    </div>
+    <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-field')">戻る</button>
   </div>
 
   <!-- Screen 3: Settings -->
@@ -326,29 +335,54 @@ h1, h2 {
 
 <script>
 // --- Dummy Data ---
-// 制限時間なし、画像表示テスト用データ
-const dbUnits = {
-  "理科": ["生物", "化学", "物理"],
+const dbFields = {
+  "理科": ["生物", "化学", "物理", "地学"],
   "社会": ["歴史", "地理", "公民"]
 };
 
+const dbUnits = {
+  "生物": ["植物の生活と種類", "動物の生活と生物の進化", "生命の連続性"],
+  "化学": ["身の回りの物質", "化学変化と原子・分子", "化学変化とイオン"],
+  "物理": ["光・音・力", "電流とその利用", "運動とエネルギー"],
+  "地学": ["大地の成り立ちと変化", "気象とその変化", "地球と宇宙"],
+  "歴史": [
+    "古代(人類の出現と文明)", "古代(縄文・弥生・古墳)", "古代(飛鳥・奈良)", "古代(平安)",
+    "中世(鎌倉)", "中世(室町)", "中世(戦国)",
+    "近世(安土桃山)", "近世(江戸 前期)", "近世(江戸 中期)", "近世(江戸 後期)",
+    "近代(明治 前期)", "近代(明治 後期)", "近代(大正)", "近代(昭和 戦前・戦中)",
+    "現代(戦後改革)", "現代(高度経済成長)", "現代(冷戦とその後)"
+  ],
+  "地理": [
+    "世界の姿と調査(地球の姿)", "世界の姿と調査(世界の地域区分)", "世界の姿と調査(身近な地域の調査)",
+    "世界の諸地域(アジア)", "世界の諸地域(アフリカ)", "世界の諸地域(ヨーロッパ)",
+    "世界の諸地域(北アメリカ)", "世界の諸地域(南アメリカ)", "世界の諸地域(オセアニア)",
+    "日本の姿と諸地域(日本の位置・領域)", "日本の姿と諸地域(日本の自然・資源)", "日本の姿と諸地域(日本の人口・産業)",
+    "日本の姿と諸地域(九州地方)", "日本の姿と諸地域(中国・四国地方)", "日本の姿と諸地域(近畿地方)",
+    "日本の姿と諸地域(中部 東海)", "日本の姿と諸地域(中部 中央高地)", "日本の姿と諸地域(中部 北陸)",
+    "日本の姿と諸地域(関東地方)", "日本の姿と諸地域(東北地方)", "日本の姿と諸地域(北海道)"
+  ],
+  "公民": [
+    "現代社会と私たちの生活(社会と文化)", "現代社会と私たちの生活(家族と地域)",
+    "日本国憲法と基本的人権(憲法の基本原則)", "日本国憲法と基本的人権(基本的人権の内容)", "日本国憲法と基本的人権(国民の義務)",
+    "日本の政治の仕組み(国会)", "日本の政治の仕組み(内閣)", "日本の政治の仕組み(裁判所)",
+    "日本の政治の仕組み(三権分立)", "日本の政治の仕組み(地方自治)",
+    "私たちの暮らしと経済(市場の仕組み)", "私たちの暮らしと経済(企業の役割)", "私たちの暮らしと経済(労働)", "私たちの暮らしと経済(金融・財政)",
+    "国際社会の諸課題(国際連合)", "国際社会の諸課題(世界平和と経済)"
+  ]
+};
+
 const dummyQuestionsDB = [
-  // 理科 - 生物
-  { subject: "理科", unit: "生物", question: "光合成を行う細胞小器官はどれか？", image: null, correct: "葉緑体", dummy1: "ミトコンドリア", dummy2: "液胞", dummy3: "細胞壁" },
-  { subject: "理科", unit: "生物", question: "この画像に写っている動物が分類されるのはどれか？", image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", correct: "哺乳類", dummy1: "爬虫類", dummy2: "両生類", dummy3: "鳥類" }, 
-  { subject: "理科", unit: "生物", question: "顕微鏡のピントを合わせるとき、最初に使うレンズの倍率は？", image: null, correct: "低倍率", dummy1: "高倍率", dummy2: "中倍率", dummy3: "超高倍率" },
-  // 理科 - 化学
-  { subject: "理科", unit: "化学", question: "水溶液が酸性を示すとき、多く含まれるイオンは？", image: null, correct: "水素イオン", dummy1: "水酸化物イオン", dummy2: "ナトリウムイオン", dummy3: "塩化物イオン" },
-  // 社会 - 歴史
-  { subject: "社会", unit: "歴史", question: "1603年に江戸幕府を開いた人物は誰か？", image: null, correct: "徳川家康", dummy1: "豊臣秀吉", dummy2: "織田信長", dummy3: "源頼朝" },
-  { subject: "社会", unit: "歴史", question: "この人物は誰か？", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Oda_Nobunaga.jpg/300px-Oda_Nobunaga.jpg", correct: "織田信長", dummy1: "豊臣秀吉", dummy2: "徳川家康", dummy3: "武田信玄" },
-  // 社会 - 地理
-  { subject: "社会", unit: "地理", question: "日本で最も面積の大きい都道府県は？", image: null, correct: "北海道", dummy1: "岩手県", dummy2: "福島県", dummy3: "長野県" }
+  { subject: "理科", field: "生物", unit: "植物の生活と種類", question: "光合成を行う細胞小器官はどれか？", image: null, correct: "葉緑体", dummy1: "ミトコンドリア", dummy2: "液胞", dummy3: "細胞壁" },
+  { subject: "理科", field: "生物", unit: "動物の生活と生物の進化", question: "この画像に写っている動物が分類されるのはどれか？", image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", correct: "哺乳類", dummy1: "爬虫類", dummy2: "両生類", dummy3: "鳥類" },
+  { subject: "社会", field: "歴史", unit: "近世(安土桃山)", question: "この人物は誰か？", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Oda_Nobunaga.jpg/300px-Oda_Nobunaga.jpg", correct: "織田信長", dummy1: "豊臣秀吉", dummy2: "徳川家康", dummy3: "武田信玄" },
+  { subject: "社会", field: "歴史", unit: "近世(江戸 前期)", question: "1603年に江戸幕府を開いた人物は誰か？", image: null, correct: "徳川家康", dummy1: "豊臣秀吉", dummy2: "織田信長", dummy3: "源頼朝" },
+  { subject: "社会", field: "地理", unit: "日本の姿と諸地域(北海道)", question: "日本で最も面積の大きい都道府県は？", image: null, correct: "北海道", dummy1: "岩手県", dummy2: "福島県", dummy3: "長野県" }
 ];
 
 // --- State ---
 let currentState = {
   subject: "",
+  field: "",
   unit: "",
   qCount: 10,
   cCount: 4,
@@ -366,11 +400,27 @@ function showScreen(screenId) {
 
 function selectSubject(subject) {
   currentState.subject = subject;
-  document.getElementById('unit-title').innerText = `${subject}の単元`;
+  document.getElementById('field-title').innerText = `${subject}の分野`;
+  
+  const list = document.getElementById('field-list');
+  list.innerHTML = "";
+  dbFields[subject].forEach(field => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.innerText = field;
+    btn.onclick = () => selectField(field);
+    list.appendChild(btn);
+  });
+  showScreen('screen-field');
+}
+
+function selectField(field) {
+  currentState.field = field;
+  document.getElementById('unit-title').innerText = `${field}の項目`;
   
   const list = document.getElementById('unit-list');
   list.innerHTML = "";
-  dbUnits[subject].forEach(unit => {
+  dbUnits[field].forEach(unit => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.innerText = unit;
@@ -402,9 +452,10 @@ document.getElementById('toggle-choices').addEventListener('click', (e) => {
 });
 
 function startTest() {
-  // 指定された教科・単元でフィルタリング
-  let filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject && q.unit === currentState.unit);
-  // データが少ない場合は教科だけでフィルタ（デモ用フォールバック）
+  // 指定された項目でフィルタリング
+  let filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject && q.field === currentState.field && q.unit === currentState.unit);
+  // データが少ない場合は分野でフィルタ（デモ用フォールバック）
+  if(filtered.length === 0) filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject && q.field === currentState.field);
   if(filtered.length === 0) filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject);
   if(filtered.length === 0) filtered = dummyQuestionsDB; 
   
@@ -429,7 +480,7 @@ function renderQuestion() {
   const qIndex = currentState.currentIndex;
   const qData = currentState.questions[qIndex];
   
-  document.getElementById('test-subject-unit').innerText = `${qData.subject} - ${qData.unit}`;
+  document.getElementById('test-subject-unit').innerText = `${qData.field} - ${qData.unit}`;
   document.getElementById('test-progress').innerText = `${qIndex + 1} / ${currentState.qCount}`;
   
   document.getElementById('question-text').innerText = qData.question;
