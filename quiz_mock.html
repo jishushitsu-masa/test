@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>一問一答テストアプリ</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css"> <!-- 共通のCSSがある場合用 -->
 <style>
 /* CSS Styles */
 :root {
@@ -240,9 +241,40 @@ h1, h2 {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Loader Overlay */
+.hidden { display: none !important; }
+.fullscreen-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #e2e8f0;
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
+
+<!-- Loading Overlay -->
+<div id="fullScreenLoader" class="fullscreen-overlay hidden">
+  <div class="spinner"></div>
+  <div style="margin-top: 1rem; color: var(--primary-color); font-weight: bold; font-size: 1.1rem; letter-spacing: 0.05em;">通信中...</div>
+</div>
 
 <div id="app-container">
   <!-- Screen 1: Subject Selection -->
@@ -328,69 +360,19 @@ h1, h2 {
       </div>
       <p style="text-align: center; margin-bottom: 30px; font-weight: 600;" id="result-message">よくがんばりました！</p>
     </div>
-    <button class="btn btn-primary" onclick="showScreen('screen-subject')">最初に戻る</button>
+    <button class="btn btn-primary" onclick="resetToHome()">最初に戻る</button>
   </div>
 
 </div>
 
+<script src="index.js"></script>
 <script>
-// --- Dummy Data ---
-const dbFields = {
-  "理科": ["生物", "化学", "物理", "地学"],
-  "社会": ["歴史", "地理", "公民"]
-};
+// --- Data State from GAS ---
+let dbSubjects = [];
+let dbFields = {};
+let dbUnits = {};
 
-const dbUnits = {
-  "生物": [
-    "植物のつくり", "花の構造", "消化と吸収", 
-    "血液循環", "細胞分裂", "遺伝の規則性"
-  ],
-  "化学": [
-    "物質の性質", "状態変化", "原子・分子", 
-    "化学変化(化合・分解)", "イオン", "酸とアルカリ"
-  ],
-  "物理": [
-    "光と音", "力", "電流", 
-    "磁界", "運動とエネルギー", "仕事"
-  ],
-  "地学": [
-    "火山と地震", "気象(天気・雲)", "天体"
-  ],
-  "歴史": [
-    "古代(人類の出現と文明)", "古代(縄文・弥生・古墳)", "古代(飛鳥・奈良)", "古代(平安)",
-    "中世(鎌倉)", "中世(室町)", "中世(戦国)",
-    "近世(安土桃山)", "近世(江戸 前期)", "近世(江戸 中期)", "近世(江戸 後期)",
-    "近代(明治 前期)", "近代(明治 後期)", "近代(大正)", "近代(昭和 戦前・戦中)",
-    "現代(戦後改革)", "現代(高度経済成長)", "現代(冷戦とその後)"
-  ],
-  "地理": [
-    "世界の姿と調査(地球の姿)", "世界の姿と調査(世界の地域区分)", "世界の姿と調査(身近な地域の調査)",
-    "世界の諸地域(アジア)", "世界の諸地域(アフリカ)", "世界の諸地域(ヨーロッパ)",
-    "世界の諸地域(北アメリカ)", "世界の諸地域(南アメリカ)", "世界の諸地域(オセアニア)",
-    "日本の姿と諸地域(日本の位置・領域)", "日本の姿と諸地域(日本の自然・資源)", "日本の姿と諸地域(日本の人口・産業)",
-    "日本の姿と諸地域(九州地方)", "日本の姿と諸地域(中国・四国地方)", "日本の姿と諸地域(近畿地方)",
-    "日本の姿と諸地域(中部 東海)", "日本の姿と諸地域(中部 中央高地)", "日本の姿と諸地域(中部 北陸)",
-    "日本の姿と諸地域(関東地方)", "日本の姿と諸地域(東北地方)", "日本の姿と諸地域(北海道)"
-  ],
-  "公民": [
-    "現代社会と私たちの生活(社会と文化)", "現代社会と私たちの生活(家族と地域)",
-    "日本国憲法と基本的人権(憲法の基本原則)", "日本国憲法と基本的人権(基本的人権の内容)", "日本国憲法と基本的人権(国民の義務)",
-    "日本の政治の仕組み(国会)", "日本の政治の仕組み(内閣)", "日本の政治の仕組み(裁判所)",
-    "日本の政治の仕組み(三権分立)", "日本の政治の仕組み(地方自治)",
-    "私たちの暮らしと経済(市場の仕組み)", "私たちの暮らしと経済(企業の役割)", "私たちの暮らしと経済(労働)", "私たちの暮らしと経済(金融・財政)",
-    "国際社会の諸課題(国際連合)", "国際社会の諸課題(世界平和と経済)"
-  ]
-};
-
-const dummyQuestionsDB = [
-  { subject: "理科", field: "生物", unit: "植物の生活と種類", question: "光合成を行う細胞小器官はどれか？", image: null, correct: "葉緑体", dummy1: "ミトコンドリア", dummy2: "液胞", dummy3: "細胞壁" },
-  { subject: "理科", field: "生物", unit: "動物の生活と生物の進化", question: "この画像に写っている動物が分類されるのはどれか？", image: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", correct: "哺乳類", dummy1: "爬虫類", dummy2: "両生類", dummy3: "鳥類" },
-  { subject: "社会", field: "歴史", unit: "近世(安土桃山)", question: "この人物は誰か？", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Oda_Nobunaga.jpg/300px-Oda_Nobunaga.jpg", correct: "織田信長", dummy1: "豊臣秀吉", dummy2: "徳川家康", dummy3: "武田信玄" },
-  { subject: "社会", field: "歴史", unit: "近世(江戸 前期)", question: "1603年に江戸幕府を開いた人物は誰か？", image: null, correct: "徳川家康", dummy1: "豊臣秀吉", dummy2: "織田信長", dummy3: "源頼朝" },
-  { subject: "社会", field: "地理", unit: "日本の姿と諸地域(北海道)", question: "日本で最も面積の大きい都道府県は？", image: null, correct: "北海道", dummy1: "岩手県", dummy2: "福島県", dummy3: "長野県" }
-];
-
-// --- State ---
+// --- Session State ---
 let currentState = {
   subject: "",
   field: "",
@@ -403,10 +385,29 @@ let currentState = {
   isAnswered: false
 };
 
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('fullScreenLoader').classList.remove('hidden');
+  const res = await apiFetch('getQuizCategories');
+  document.getElementById('fullScreenLoader').classList.add('hidden');
+  
+  if (res.status === 'success') {
+    dbSubjects = res.data.subjects;
+    dbFields = res.data.fields;
+    dbUnits = res.data.units;
+  } else {
+    console.warn("GASからカテゴリを取得できませんでした。スプレッドシートの設定を確認してください。");
+  }
+});
+
 // --- UI Logic ---
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+}
+
+function resetToHome() {
+  showScreen('screen-subject');
 }
 
 function selectSubject(subject) {
@@ -415,7 +416,14 @@ function selectSubject(subject) {
   
   const list = document.getElementById('field-list');
   list.innerHTML = "";
-  dbFields[subject].forEach(field => {
+  
+  const fields = dbFields[subject] || [];
+  if (fields.length === 0) {
+    alert("この教科のデータはまだ登録されていません。");
+    return;
+  }
+  
+  fields.forEach(field => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.innerText = field;
@@ -431,13 +439,31 @@ function selectField(field) {
   
   const list = document.getElementById('unit-list');
   list.innerHTML = "";
-  dbUnits[field].forEach(unit => {
+  
+  const units = dbUnits[field] || [];
+  if (units.length === 0) {
+    // 項目がない場合は直接出題設定へ
+    currentState.unit = "";
+    showScreen('screen-settings');
+    return;
+  }
+  
+  units.forEach(unit => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.innerText = unit;
     btn.onclick = () => selectUnit(unit);
     list.appendChild(btn);
   });
+  
+  // 「すべて」から出題するオプション
+  const allBtn = document.createElement('button');
+  allBtn.className = 'btn btn-primary';
+  allBtn.innerText = `${field}の全範囲から出題`;
+  allBtn.style.marginTop = '24px';
+  allBtn.onclick = () => selectUnit("");
+  list.appendChild(allBtn);
+
   showScreen('screen-unit');
 }
 
@@ -462,25 +488,32 @@ document.getElementById('toggle-choices').addEventListener('click', (e) => {
   }
 });
 
-function startTest() {
-  // 指定された項目でフィルタリング
-  let filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject && q.field === currentState.field && q.unit === currentState.unit);
-  // データが少ない場合は分野でフィルタ（デモ用フォールバック）
-  if(filtered.length === 0) filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject && q.field === currentState.field);
-  if(filtered.length === 0) filtered = dummyQuestionsDB.filter(q => q.subject === currentState.subject);
-  if(filtered.length === 0) filtered = dummyQuestionsDB; 
+async function startTest() {
+  document.getElementById('fullScreenLoader').classList.remove('hidden');
   
-  // シャッフルして抽出
-  currentState.questions = filtered.sort(() => 0.5 - Math.random()).slice(0, currentState.qCount);
+  const payload = {
+    subject: currentState.subject,
+    field: currentState.field,
+    unit: currentState.unit,
+    qCount: currentState.qCount,
+    cCount: currentState.cCount
+  };
   
-  // デモ用: 10問要求されてもデータが少ない場合は問題数を調整
-  currentState.qCount = currentState.questions.length;
+  const res = await apiFetch('getQuizQuestions', payload);
+  document.getElementById('fullScreenLoader').classList.add('hidden');
   
-  currentState.currentIndex = 0;
-  currentState.score = 0;
-  
-  showScreen('screen-test');
-  renderQuestion();
+  if (res.status === 'success' && res.data && res.data.length > 0) {
+    currentState.questions = res.data;
+    currentState.qCount = res.data.length; // 実際取得できた問題数に合わせる
+    currentState.currentIndex = 0;
+    currentState.score = 0;
+    
+    showScreen('screen-test');
+    renderQuestion();
+  } else {
+    alert("指定した範囲に問題が見つかりません。別の条件でお試しください。");
+    showScreen('screen-unit');
+  }
 }
 
 function renderQuestion() {
@@ -491,13 +524,14 @@ function renderQuestion() {
   const qIndex = currentState.currentIndex;
   const qData = currentState.questions[qIndex];
   
-  document.getElementById('test-subject-unit').innerText = `${qData.field} - ${qData.unit}`;
+  const headerText = qData.unit ? `${qData.field} - ${qData.unit}` : `${qData.subject} - ${qData.field}`;
+  document.getElementById('test-subject-unit').innerText = headerText;
   document.getElementById('test-progress').innerText = `${qIndex + 1} / ${currentState.qCount}`;
   
   document.getElementById('question-text').innerText = qData.question;
   
   const imgEl = document.getElementById('question-image');
-  if (qData.image) {
+  if (qData.image && qData.image.trim() !== '') {
     imgEl.src = qData.image;
     imgEl.style.display = 'block';
   } else {
