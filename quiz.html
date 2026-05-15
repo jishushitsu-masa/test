@@ -323,6 +323,15 @@ h1, h2 {
           <button class="toggle-btn selected" data-val="4">4択</button>
         </div>
       </div>
+      <div class="settings-group">
+        <label>難易度</label>
+        <div class="toggle-btns" id="toggle-difficulty">
+          <button class="toggle-btn selected" data-val="すべて">すべて</button>
+          <button class="toggle-btn" data-val="標準">標準</button>
+          <button class="toggle-btn" data-val="応用">応用</button>
+          <button class="toggle-btn" data-val="難問">難問</button>
+        </div>
+      </div>
     </div>
     <button class="btn btn-primary" onclick="startTest()">テストスタート</button>
     <button class="btn" style="margin-top: 10px;" onclick="showScreen('screen-unit')">戻る</button>
@@ -367,7 +376,7 @@ h1, h2 {
 
 <script>
 // --- API Fetch Logic ---
-const API_URL = 'https://script.google.com/macros/s/AKfycbx1QXMvmTkNbMC1rTGNzoG8-_9e5R0SknNB_VMTsvl3SRmvtYXbOcGpNgkwKgjME-ywDw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzlrMFUC9EzjmdzeOFx2H5o1C5sHgk1Oa3m6ZIE2o8ElUhKlkB7ElV-rq0tRj0LEkMK/exec';
 
 async function apiFetch(action, data = {}) {
   try {
@@ -394,6 +403,7 @@ let currentState = {
   subject: "",
   field: "",
   unit: "",
+  difficulty: "すべて",
   qCount: 10,
   cCount: 4,
   questions: [],
@@ -515,6 +525,14 @@ document.getElementById('toggle-choices').addEventListener('click', (e) => {
   }
 });
 
+document.getElementById('toggle-difficulty').addEventListener('click', (e) => {
+  if (e.target.tagName === 'BUTTON') {
+    document.querySelectorAll('#toggle-difficulty .toggle-btn').forEach(b => b.classList.remove('selected'));
+    e.target.classList.add('selected');
+    currentState.difficulty = e.target.dataset.val;
+  }
+});
+
 async function startTest() {
   document.getElementById('fullScreenLoader').classList.remove('hidden');
   
@@ -522,6 +540,7 @@ async function startTest() {
     subject: currentState.subject,
     field: currentState.field,
     unit: currentState.unit,
+    difficulty: currentState.difficulty,
     qCount: currentState.qCount,
     cCount: currentState.cCount
   };
