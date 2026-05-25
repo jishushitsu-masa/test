@@ -440,7 +440,7 @@
 
   <script>
     // --- API Fetch Logic ---
-    const API_URL = 'https://script.google.com/macros/s/AKfycbx1QXMvmTkNbMC1rTGNzoG8-_9e5R0SknNB_VMTsvl3SRmvtYXbOcGpNgkwKgjME-ywDw/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzlrMFUC9EzjmdzeOFx2H5o1C5sHgk1Oa3m6ZIE2o8ElUhKlkB7ElV-rq0tRj0LEkMK/exec';
 
     async function apiFetch(action, data = {}) {
       try {
@@ -531,6 +531,19 @@
         btn.onclick = () => selectField(field);
         list.appendChild(btn);
       });
+
+      if (subject === '社会') {
+        const btnSort = document.createElement('button');
+        btnSort.className = 'btn';
+        btnSort.style.background = 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)';
+        btnSort.style.color = 'white';
+        btnSort.innerText = '歴史（時代仕分けクイズ）';
+        btnSort.onclick = () => {
+          window.location.href = 'history_sort.html';
+        };
+        list.appendChild(btnSort);
+      }
+
       showScreen('screen-field');
     }
 
