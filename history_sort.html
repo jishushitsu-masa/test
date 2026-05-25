@@ -327,7 +327,7 @@
       </div>
       
       <button class="primary-btn" id="checkAnswersBtn" onclick="checkAnswers()" style="margin-bottom: 1rem;">答え合わせ</button>
-      <button class="secondary-btn" id="backBtn" onclick="showSetupScreen()">時代選択に戻る</button>
+      <button class="secondary-btn" id="backBtn" onclick="showSetupScreen()">設定に戻る</button>
     </div>
   </div>
 
@@ -526,8 +526,6 @@
     }
 
     function checkAnswers() {
-      if (!confirm("答え合わせをしますか？")) return;
-      
       isResultMode = true;
       document.getElementById('checkAnswersBtn').style.display = 'none';
       
