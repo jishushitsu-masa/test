@@ -1,1 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>時代仕分けクイズ</title>
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --bg-color: #f3f4f6;
+      --surface-color: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --correct-color: #10b981;
+      --incorrect-color: #ef4444;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+    
+    .card {
+      background: var(--surface-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+    
+    /* Setup Screen */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+    
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0.75rem;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .checkbox-label input {
+      margin-right: 0.5rem;
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+    
+    select, button {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    
+    select {
+      background-color: #fff;
+    }
+    
+    button.primary-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    button.primary-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    button.secondary-btn {
+      background-color: #e5e7eb;
+      color: var(--text-main);
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    
+    /* Game Screen */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      scrollbar-width: thin;
+    }
+    
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      background-color: #f3f4f6;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    
+    .tab-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+    
+    .term-container {
+      min-height: 120px;
+      background-color: #f9fafb;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-content: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    
+    .term-container.pool {
+      border: 2px solid var(--border-color);
+      background-color: white;
+    }
+    
+    .term {
+      background-color: white;
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .term:active {
+      transform: scale(0.95);
+    }
+    
+    .term.correct {
+      border-color: var(--correct-color);
+      background-color: #ecfdf5;
+    }
+    
+    .term.incorrect {
+      border-color: var(--incorrect-color);
+      background-color: #fef2f2;
+    }
+    
+    .correction {
+      font-size: 0.75rem;
+      color: var(--incorrect-color);
+      display: block;
+      margin-top: 0.2rem;
+    }
+    
+    .section-title {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .count-badge {
+      background: var(--primary-color);
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+    }
+    
+    #resultSummary {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    
+    /* Loading overlay */
+    #loadingOverlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+    <p style="margin-top: 10px; font-weight: bold; color: var(--primary-color);">データを取得中...</p>
+  </div>
 
+  <div class="container">
+    <header>
+      <h1>時代仕分けクイズ</h1>
+      <p style="font-size: 0.9rem; color: var(--text-muted);">用語を正しい時代に振り分けよう！</p>
+    </header>
+
+    <!-- Setup Screen -->
+    <div id="setupScreen" class="card">
+      <div class="form-group">
+        <label>時代を選択（複数可）</label>
+        <div class="checkbox-grid" id="periodCheckboxes">
+          <!-- JS will populate this -->
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>難易度</label>
+        <select id="difficultySelect">
+          <option value="すべて">すべて</option>
+          <option value="標準">標準</option>
+          <option value="応用">応用</option>
+          <option value="難問">難問</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>1時代あたりの出題数</label>
+        <select id="qCountSelect">
+          <option value="5">5問</option>
+          <option value="10" selected>10問</option>
+          <option value="20">20問</option>
+        </select>
+      </div>
+      
+      <button class="primary-btn" onclick="startGame()">クイズを開始する</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" style="display: none;">
+      
+      <div id="resultSummary"></div>
+
+      <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+        <div class="tabs" id="periodTabs">
+          <!-- Tabs populated by JS -->
+        </div>
+        
+        <div class="section-title">
+          <span id="currentPeriodName">選択中の時代</span>
+          <span class="count-badge" id="assignedCount">0</span>
+        </div>
+        
+        <!-- Drop zone for the selected period -->
+        <div class="term-container" id="assignedTermsContainer">
+          <!-- Terms go here -->
+        </div>
+      </div>
+      
+      <div class="card" style="padding: 1rem;">
+        <div class="section-title">
+          <span>未分類の用語（ダミー用語はここに残す）</span>
+          <span class="count-badge" id="poolCount">0</span>
+        </div>
+        
+        <!-- Unassigned pool -->
+        <div class="term-container pool" id="poolContainer">
+          <!-- Terms go here -->
+        </div>
+      </div>
+      
+      <button class="primary-btn" id="checkAnswersBtn" onclick="checkAnswers()" style="margin-bottom: 1rem;">答え合わせ</button>
+      <button class="secondary-btn" id="backBtn" onclick="showSetupScreen()">設定に戻る</button>
+    </div>
+  </div>
+
+  <script>
+    // Please update this URL to your deployed GAS Web App URL
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbz_sM6f1h6L9F7Z7GgM-01j1Zp-f04V2oF1M_R0A0G3L5N9GjE/exec';
+
+    const ALL_PERIODS = [
+      "歴史と古代文明", "古代の日本", "飛鳥時代", "奈良時代", "平安時代", 
+      "鎌倉時代", "室町時代", "安土桃山時代", "江戸時代 前期", "江戸時代 後期", 
+      "開国と明治維新", "近代国家への歩み", "大正時代と第一次世界大戦", 
+      "昭和時代（戦前・戦中）", "現代日本の歩み", "冷戦と現代の世界"
+    ];
+
+    let gameData = [];
+    let selectedPeriods = [];
+    let activePeriod = null;
+    
+    // state: term id -> assigned period (null if in pool)
+    let termAssignments = {};
+    let isResultMode = false;
+
+    window.onload = () => {
+      const grid = document.getElementById('periodCheckboxes');
+      ALL_PERIODS.forEach(period => {
+        const label = document.createElement('label');
+        label.className = 'checkbox-label';
+        label.innerHTML = `<input type="checkbox" value="${period}" class="period-cb"> ${period}`;
+        grid.appendChild(label);
+      });
+    };
+
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    async function startGame() {
+      const checkboxes = document.querySelectorAll('.period-cb:checked');
+      selectedPeriods = Array.from(checkboxes).map(cb => cb.value);
+      
+      if (selectedPeriods.length === 0) {
+        alert("時代を1つ以上選択してください。");
+        return;
+      }
+      
+      const difficulty = document.getElementById('difficultySelect').value;
+      const qCount = document.getElementById('qCountSelect').value;
+      
+      showLoading(true);
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'getHistorySortingData',
+            periods: selectedPeriods,
+            difficulty: difficulty,
+            qCount: qCount
+          })
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          initGameData(result.data);
+        } else {
+          alert("エラー: " + result.message);
+        }
+      } catch (err) {
+        alert("通信エラーが発生しました。");
+        console.error(err);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function initGameData(data) {
+      if (data.length === 0) {
+        alert("指定された条件の用語が見つかりませんでした。");
+        return;
+      }
+      
+      gameData = data.map((d, index) => ({
+        id: 'term_' + index,
+        term: d.term,
+        correctPeriod: d.period // 'dummy' if it shouldn't be assigned
+      }));
+      
+      termAssignments = {};
+      gameData.forEach(d => {
+        termAssignments[d.id] = null; // null means in pool
+      });
+      
+      isResultMode = false;
+      document.getElementById('resultSummary').style.display = 'none';
+      document.getElementById('checkAnswersBtn').style.display = 'block';
+      
+      buildTabs();
+      activePeriod = selectedPeriods[0];
+      
+      document.getElementById('setupScreen').style.display = 'none';
+      document.getElementById('gameScreen').style.display = 'block';
+      
+      renderGame();
+    }
+
+    function buildTabs() {
+      const tabsContainer = document.getElementById('periodTabs');
+      tabsContainer.innerHTML = '';
+      
+      selectedPeriods.forEach(period => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.textContent = period;
+        btn.onclick = () => {
+          activePeriod = period;
+          renderGame();
+        };
+        tabsContainer.appendChild(btn);
+      });
+    }
+
+    function renderGame() {
+      // Update tabs
+      const tabs = document.querySelectorAll('.tab-btn');
+      tabs.forEach(tab => {
+        if (tab.textContent === activePeriod) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+      
+      document.getElementById('currentPeriodName').textContent = activePeriod;
+      
+      const assignedContainer = document.getElementById('assignedTermsContainer');
+      const poolContainer = document.getElementById('poolContainer');
+      
+      assignedContainer.innerHTML = '';
+      poolContainer.innerHTML = '';
+      
+      let assignedCount = 0;
+      let poolCount = 0;
+      
+      gameData.forEach(data => {
+        const currentLoc = termAssignments[data.id];
+        
+        // If it's in the currently selected period
+        if (currentLoc === activePeriod) {
+          assignedContainer.appendChild(createTermElement(data, true));
+          assignedCount++;
+        }
+        // If it's in the pool
+        else if (currentLoc === null) {
+          poolContainer.appendChild(createTermElement(data, false));
+          poolCount++;
+        }
+        // If it's in another period, we don't render it in the current view
+      });
+      
+      document.getElementById('assignedCount').textContent = assignedCount;
+      document.getElementById('poolCount').textContent = poolCount;
+    }
+
+    function createTermElement(data, isAssigned) {
+      const el = document.createElement('div');
+      el.className = 'term';
+      el.textContent = data.term;
+      
+      if (!isResultMode) {
+        el.onclick = () => {
+          if (isAssigned) {
+            // Move back to pool
+            termAssignments[data.id] = null;
+          } else {
+            // Move to active period
+            termAssignments[data.id] = activePeriod;
+          }
+          renderGame();
+        };
+      } else {
+        // Result Mode Styling
+        el.style.cursor = 'default';
+        const assignedTo = termAssignments[data.id];
+        const isCorrect = (assignedTo === data.correctPeriod) || (assignedTo === null && data.correctPeriod === 'dummy');
+        
+        if (isCorrect) {
+          el.classList.add('correct');
+          el.innerHTML = `〇 ${data.term}`;
+        } else {
+          el.classList.add('incorrect');
+          let correctText = data.correctPeriod === 'dummy' ? 'ダミー（未分類が正解）' : data.correctPeriod;
+          el.innerHTML = `✕ ${data.term} <br><span class="correction">正解: ${correctText}</span>`;
+        }
+      }
+      
+      return el;
+    }
+
+    function checkAnswers() {
+      if (!confirm("答え合わせをしますか？")) return;
+      
+      isResultMode = true;
+      document.getElementById('checkAnswersBtn').style.display = 'none';
+      
+      let correctCount = 0;
+      gameData.forEach(data => {
+        const assignedTo = termAssignments[data.id];
+        const isCorrect = (assignedTo === data.correctPeriod) || (assignedTo === null && data.correctPeriod === 'dummy');
+        if (isCorrect) correctCount++;
+      });
+      
+      const summary = document.getElementById('resultSummary');
+      summary.style.display = 'block';
+      summary.innerHTML = `結果: ${gameData.length}問中 <span style="color:var(--correct-color); font-size:1.5em;">${correctCount}</span> 問正解！`;
+      
+      // Force render all periods to see results if they want to click tabs
+      renderGame();
+    }
+
+    function showSetupScreen() {
+      document.getElementById('gameScreen').style.display = 'none';
+      document.getElementById('setupScreen').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
